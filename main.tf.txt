@@ -1,0 +1,56 @@
+provider "google" {
+  credentials = file("<path-to-your-service-account-key>.json")
+  project     = "<your-project-id>"
+  region      = "<your-region>"
+}
+
+resource "google_compute_network" "vpc" {
+  name = "my-vpc"
+}
+
+resource "google_compute_subnetwork" "public_subnet" {
+  name          = "public-subnet"
+  ip_cidr_range  = "10.0.1.0/24"
+  region         = "<your-region>"
+  network        = google_compute_network.vpc.name
+}
+
+resource "google_compute_subnetwork" "private_subnet" {
+  name          = "private-subnet"
+  ip_cidr_range  = "10.0.2.0/24"
+  region         = "<your-region>"
+  network        = google_compute_network.vpc.name
+}
+
+resource "google_compute_instance" "web_instance" {
+  name         = "web-instance"
+  machine_type = "e2-micro"
+  zone         = "<your-zone>"
+  network_interface {
+    network    = google_compute_network.vpc.name
+    subnetwork = google_compute_subnetwork.public_subnet.name
+    access_config {}
+  }
+  boot_disk {
+    initialize_params {
+      image = "debian-cloud/debian-11"
+    }
+  }
+  metadata_startup_script = <<-EOT
+    #!/bin/bash
+    apt-get update
+    apt-get install -y nginx
+    systemctl start nginx
+    systemctl enable nginx
+  EOT
+}
+
+resource "google_compute_firewall" "default" {
+  name    = "allow-http-https"
+  network = google_compute_network.vpc.name
+  allow {
+    protocol = "tcp"
+    ports    = ["80", "443"]
+  }
+  source_ranges = ["0.0.0.0/0"]
+}

@@ -1,0 +1,14 @@
+Using Google Cloud Monitoring:
+
+Setting up monitoring:
+
+Go to Google Cloud Console > Monitoring.
+Create a new dashboard to monitor CPU, memory, and disk usage of your Compute Engine instance.
+Set up an alert:
+
+Go to Google Cloud Console > Monitoring > Alerts.
+Create an alert policy with the following conditions:
+Condition Type: Metric Absence or Threshold
+Metric: CPU Utilization
+Threshold: 80% CPU usage
+Configure email notifications in the notification channels.

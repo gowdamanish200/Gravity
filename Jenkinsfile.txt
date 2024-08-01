@@ -1,0 +1,25 @@
+pipeline {
+    agent any
+    stages {
+        stage('Checkout') {
+            steps {
+                git 'https://source.developers.google.com/projects/<your-project-id>/repos/<your-repo>/moving-files'
+            }
+        }
+        stage('Build') {
+            steps {
+                sh 'docker build -t gcr.io/$PROJECT_ID/my-app .'
+            }
+        }
+        stage('Test') {
+            steps {
+                sh 'docker run --rm gcr.io/$PROJECT_ID/my-app /bin/sh -c "your-test-command"'
+            }
+        }
+        stage('Deploy') {
+            steps {
+                sh 'gcloud compute ssh <your-instance-name> --zone=<your-zone> --command="docker run -d -p 80:80 gcr.io/$PROJECT_ID/my-app"'
+            }
+        }
+    }
+}
